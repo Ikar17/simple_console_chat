@@ -16,7 +16,7 @@ public class ClientHandler implements Runnable{
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.messages = new ArrayList<>();
-            System.out.println("Client connected");
+            System.out.println("Client is connected");
         }catch(IOException e){
             closeEverything(socket, bufferedWriter, bufferedReader);
         }
