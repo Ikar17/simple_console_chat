@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.Socket;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class ClientHandler implements Runnable{
 
@@ -32,7 +33,11 @@ public class ClientHandler implements Runnable{
                 String messageText = bufferedReader.readLine();
                 LocalTime time = LocalTime.parse(bufferedReader.readLine());
                 Message message = new Message(messageText, time);
+
+                //dodawanie notyfikacji do kolejki i sortowanie wg czasu
                 messages.add(message);
+                Collections.sort(messages);
+
                 for(Message msg : messages){
                     System.out.println(msg.getTime() + " " + msg.getMessage());
                 }
@@ -47,8 +52,8 @@ public class ClientHandler implements Runnable{
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try{
-                    while(socket.isConnected()){
+                while(socket.isConnected()){
+                    try{
                         Thread.sleep(1000);
                         if(!messages.isEmpty()){
                             Message temp = messages.get(0);
@@ -61,16 +66,16 @@ public class ClientHandler implements Runnable{
                                 messages.remove(0);
                             }
                         }
+                    }catch(IOException e){
+                        closeEverything(socket, bufferedWriter, bufferedReader);
+                        break;
+                    }catch(InterruptedException e){
+                        continue;
                     }
-                }catch(IOException e){
-                    closeEverything(socket, bufferedWriter, bufferedReader);
-                }catch(InterruptedException e){
-                    return;
                 }
             }
         }).start();
     }
-
     public void closeEverything(Socket socket, BufferedWriter bufferedWriter, BufferedReader bufferedReader){
         try{
 
@@ -78,7 +83,7 @@ public class ClientHandler implements Runnable{
             if(bufferedReader != null) bufferedReader.close();
             if(socket != null){
                 socket.close();
-                System.out.println("Client disconnect");
+                System.out.println("Client is disconnected");
             }
         }catch(IOException e){
             e.printStackTrace();
